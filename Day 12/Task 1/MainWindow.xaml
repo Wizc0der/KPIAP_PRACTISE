@@ -1,0 +1,68 @@
+﻿<Window x:Class="HotelBooking.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Система бронирования отеля" Height="500" Width="900"
+        Background="#F5F5F5">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Список номеров -->
+        <GroupBox Grid.Column="0" Header="Доступные номера" Background="White" 
+                  BorderBrush="#E0E0E0" Margin="0,0,10,0">
+            <DataGrid x:Name="dgRooms" AutoGenerateColumns="False" 
+                      CanUserAddRows="False" Background="White"
+                      SelectionMode="Single" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="№" Binding="{Binding Number}" Width="50"/>
+                    <DataGridTextColumn Header="Тип" Binding="{Binding Type}" Width="100"/>
+                    <DataGridTextColumn Header="Цена/ночь" Binding="{Binding Price, StringFormat={}{0:C}}" Width="80"/>
+                    <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="80"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        <!-- Форма бронирования -->
+        <GroupBox Grid.Column="1" Header="Бронирование" Background="White" 
+                  BorderBrush="#E0E0E0" Margin="10,0,0,0">
+            <StackPanel Margin="15" VerticalAlignment="Top">
+                <TextBlock Text="ФИО:" Margin="0,0,0,5" FontWeight="Bold"/>
+                <TextBox x:Name="txtFullName" Height="25" Margin="0,0,0,15" 
+                         Background="#FAFAFA"/>
+
+                <TextBlock Text="Дата заезда:" Margin="0,0,0,5" FontWeight="Bold"/>
+                <DatePicker x:Name="dpCheckIn" Height="25" Margin="0,0,0,15"
+                            Background="#FAFAFA"/>
+
+                <TextBlock Text="Дата выезда:" Margin="0,0,0,5" FontWeight="Bold"/>
+                <DatePicker x:Name="dpCheckOut" Height="25" Margin="0,0,0,15"
+                            Background="#FAFAFA"/>
+
+                <TextBlock x:Name="txtTotalPrice" Text="Итого: 0 ₽" 
+                           FontSize="14" FontWeight="Bold" Margin="0,0,0,15"
+                           Foreground="#4CAF50"/>
+
+                <Button Content="Забронировать" Height="35" 
+                        Click="btnBook_Click" Background="#4CAF50" 
+                        Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#4CAF50"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#45A049"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <TextBlock x:Name="txtMessage" Margin="0,15,0,0" 
+                           TextWrapping="Wrap" Foreground="#F44336"/>
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</Window>
