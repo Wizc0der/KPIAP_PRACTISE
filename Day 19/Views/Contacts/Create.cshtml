@@ -1,0 +1,131 @@
+@model Contact
+@{
+    ViewData["Title"] = "Добавить контакт";
+}
+
+<style>
+    .form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 2rem;
+        max-width: 500px;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: .45rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"] {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: .65rem .9rem;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+
+    input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+
+    input.input-error {
+        border-color: var(--danger);
+    }
+
+    .field-validation-error {
+        display: block;
+        color: var(--danger);
+        font-size: 11px;
+        margin-top: .35rem;
+        letter-spacing: 0.03em;
+    }
+
+    .btn {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: .65rem 1.4rem;
+        border-radius: var(--radius);
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: opacity .15s;
+        display: inline-block;
+    }
+    .btn-primary { background: var(--accent); color: #000; font-weight: 700; }
+    .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn:hover   { opacity: .8; }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .hint {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: .3rem;
+    }
+
+    .required { color: var(--accent); }
+</style>
+
+<h1>Новый контакт</h1>
+
+<div class="form-card">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- Имя -->
+        <div class="form-group">
+            <label asp-for="Name">Имя <span class="required">*</span></label>
+            <input asp-for="Name" type="text" placeholder="Иван Иванов"
+                   class="@(ViewData.ModelState["Name"]?.Errors.Count > 0 ? "input-error" : "")" />
+            <span asp-validation-for="Name" class="field-validation-error"></span>
+        </div>
+
+        <!-- Телефон -->
+        <div class="form-group">
+            <label asp-for="PhoneNumber">Телефон <span class="required">*</span></label>
+            <input asp-for="PhoneNumber" type="tel" placeholder="+7 (999) 000-00-00"
+                   class="@(ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0 ? "input-error" : "")" />
+            <span asp-validation-for="PhoneNumber" class="field-validation-error"></span>
+            <span class="hint">Формат: +7 (XXX) XXX-XX-XX</span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label asp-for="Email">Email <span style="color:var(--muted);font-size:10px;">(необязательно)</span></label>
+            <input asp-for="Email" type="email" placeholder="ivan@example.com"
+                   class="@(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "input-error" : "")" />
+            <span asp-validation-for="Email" class="field-validation-error"></span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">✓ Сохранить</button>
+            <a asp-action="Index" class="btn btn-ghost">Отмена</a>
+        </div>
+    </form>
+</div>
