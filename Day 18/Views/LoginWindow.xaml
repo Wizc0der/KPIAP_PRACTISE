@@ -7,14 +7,12 @@
 
     <Grid>
         <Border VerticalAlignment="Center" HorizontalAlignment="Center"
-                Width="360" Background="White" CornerRadius="16"
-                Padding="40,36">
+                Width="360" Background="White" CornerRadius="16" Padding="40,36">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="30" ShadowDepth="4" Opacity="0.12"/>
             </Border.Effect>
 
             <StackPanel>
-                <!-- Logo -->
                 <TextBlock Text="🏨" FontSize="40" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                 <TextBlock Text="HotelPro" FontSize="24" FontWeight="Bold"
                            Foreground="{StaticResource PrimaryBrush}"
@@ -23,101 +21,77 @@
                            Foreground="{StaticResource TextSecondaryBrush}"
                            HorizontalAlignment="Center" Margin="0,2,0,24"/>
 
-                <!-- Login panel -->
-                <StackPanel x:Name="LoginPanel"
-                            Visibility="{Binding LoginMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                <!-- Login -->
+                <StackPanel Visibility="{Binding LoginMode, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="ЛОГИН" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource ModernTextBox}" Margin="0,0,0,14"/>
-
                     <TextBlock Text="ПАРОЛЬ" Style="{StaticResource FieldLabel}"/>
                     <PasswordBox x:Name="PwdBox" Style="{StaticResource ModernPasswordBox}" Margin="0,0,0,20"/>
-
                     <Button Content="Войти" Command="{Binding LoginCommand}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Click="LoginButton_Click"/>
                 </StackPanel>
 
-                <!-- Register panel -->
+                <!-- Register -->
                 <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="ФИО" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding RegFullName, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource ModernTextBox}" Margin="0,0,0,10"/>
-
                     <TextBlock Text="ЛОГИН" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource ModernTextBox}" Margin="0,0,0,10"/>
-
                     <TextBlock Text="ПАРОЛЬ (мин. 6 символов)" Style="{StaticResource FieldLabel}"/>
                     <PasswordBox x:Name="RegPwdBox" Style="{StaticResource ModernPasswordBox}" Margin="0,0,0,10"/>
-
                     <TextBlock Text="EMAIL" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding RegEmail, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource ModernTextBox}" Margin="0,0,0,10"/>
-
                     <TextBlock Text="ТЕЛЕФОН" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding RegPhone, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource ModernTextBox}" Margin="0,0,0,16"/>
-
                     <Button Content="Зарегистрировать" Command="{Binding RegisterCommand}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Click="RegisterButton_Click"/>
                 </StackPanel>
 
                 <!-- Error -->
-                <Border Background="#FEF2F2" CornerRadius="6" Padding="12,8"
-                        Margin="0,14,0,0"
+                <Border Background="#FEF2F2" CornerRadius="6" Padding="12,8" Margin="0,14,0,0"
                         Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#DC2626" FontSize="12" TextWrapping="Wrap"/>
                 </Border>
 
-                <!-- Toggle mode -->
-                <Button Margin="0,16,0,0" Background="Transparent" BorderThickness="0"
-                        Foreground="{StaticResource PrimaryBrush}" FontSize="12"
-                        Cursor="Hand" Command="{Binding ToggleModeCommand}">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <TextBlock x:Name="tb" Text="{TemplateBinding Content}"
-                                                   HorizontalAlignment="Center"
-                                                   Foreground="{TemplateBinding Foreground}"/>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="tb" Property="TextDecorations" Value="Underline"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <Button.Content>
-                        <TextBlock>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsRegisterMode}" Value="True">
-                                            <Setter Property="Text" Value="← Уже есть аккаунт? Войти"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsRegisterMode}" Value="False">
-                                            <Setter Property="Text" Value="Регистрация нового менеджера →"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Button.Content>
+                <!-- Toggle -->
+                <Button Margin="0,16,0,0" Command="{Binding ToggleModeCommand}"
+                        HorizontalAlignment="Center" Background="Transparent"
+                        BorderThickness="0" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <TextBlock x:Name="tb" HorizontalAlignment="Center"
+                                       FontSize="12" Foreground="{StaticResource PrimaryBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRegisterMode}" Value="True">
+                                                <Setter Property="Text" Value="← Уже есть аккаунт? Войти"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsRegisterMode}" Value="False">
+                                                <Setter Property="Text" Value="Регистрация нового менеджера →"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="tb" Property="TextDecorations" Value="Underline"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
 
-                <TextBlock Text="Пароль по умолчанию: admin / admin123"
+                <TextBlock Text="По умолчанию: admin / admin123"
                            FontSize="10" Foreground="#94A3B8"
                            HorizontalAlignment="Center" Margin="0,8,0,0"/>
             </StackPanel>

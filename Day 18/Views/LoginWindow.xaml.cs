@@ -1,4 +1,6 @@
 using System.Windows;
+using HotelBooking.Data;
+using HotelBooking.Repositories;
 using HotelBooking.Services;
 using HotelBooking.ViewModels;
 
@@ -6,25 +8,27 @@ namespace HotelBooking.Views
 {
     public partial class LoginWindow : Window
     {
-        private readonly AuthViewModel _vm;
-        private readonly DataService _dataService;
-        private readonly AuthService _authService;
+        private readonly AuthViewModel   _vm;
+        private readonly DatabaseContext _db;
+        private readonly AuthService     _authService;
 
         public LoginWindow()
         {
             InitializeComponent();
-            _dataService = new DataService();
-            _authService = new AuthService(_dataService);
-            _vm = new AuthViewModel(_authService);
-            DataContext = _vm;
-
+            _db          = new DatabaseContext();   // creates hotel.db, seeds data
+            _authService = new AuthService(_db);
+            _vm          = new AuthViewModel(_authService);
+            DataContext  = _vm;
             _vm.LoginSucceeded += OnLoginSucceeded;
-            Loaded += async (_, _) => await _authService.InitializeAsync();
         }
 
         private void OnLoginSucceeded()
         {
-            var main = new MainWindow(_dataService, _authService);
+            var roomRepo    = new RoomRepository(_db);
+            var bookingRepo = new BookingRepository(_db);
+            var bookingSvc  = new BookingService();
+
+            var main = new MainWindow(roomRepo, bookingRepo, bookingSvc, _authService);
             main.Show();
             Close();
         }

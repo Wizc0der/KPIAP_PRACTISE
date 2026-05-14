@@ -1,79 +1,96 @@
+using HotelBooking.Data;
 using HotelBooking.Models;
+using Microsoft.Data.Sqlite;
 
 namespace HotelBooking.Services
 {
     public class AuthService
     {
-        private readonly DataService _dataService;
-        private List<UserModel> _users = new();
+        private readonly DatabaseContext _db;
         public UserModel? CurrentUser { get; private set; }
 
-        public AuthService(DataService dataService)
+        public AuthService(DatabaseContext db)
         {
-            _dataService = dataService;
+            _db = db;
         }
 
-        public async Task InitializeAsync()
+        public async Task<(bool Success, string Message)> LoginAsync(string username, string password)
         {
-            _users = await _dataService.LoadUsersAsync();
-        }
+            string hash = AuthHelper.HashPassword(password);
+            await using var conn = _db.GetConnection();
+            await using var cmd = new SqliteCommand("""
+                SELECT Id, Username, FullName, Role, Email, Phone
+                FROM Users
+                WHERE Username=@u AND PasswordHash=@h AND Role='Manager'
+                """, conn);
+            cmd.Parameters.AddWithValue("@u", username);
+            cmd.Parameters.AddWithValue("@h", hash);
 
-        public (bool Success, string Message) Login(string username, string password)
-        {
-            var hash = DataService.HashPassword(password);
-            var user = _users.FirstOrDefault(u =>
-                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) &&
-                u.PasswordHash == hash &&
-                u.Role == "Manager");
-
-            if (user == null)
-                return (false, "Неверный логин или пароль.");
-
-            CurrentUser = user;
-            return (true, $"Добро пожаловать, {user.FullName}!");
+            await using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                CurrentUser = new UserModel
+                {
+                    Id       = reader.GetString(0),
+                    Username = reader.GetString(1),
+                    FullName = reader.GetString(2),
+                    Role     = reader.GetString(3),
+                    Email    = reader.GetString(4),
+                    Phone    = reader.GetString(5)
+                };
+                return (true, $"Добро пожаловать, {CurrentUser.FullName}!");
+            }
+            return (false, "Неверный логин или пароль.");
         }
 
         public async Task<(bool Success, string Message)> RegisterManagerAsync(
             string username, string password, string fullName, string email, string phone)
         {
-            if (_users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)))
-                return (false, "Пользователь с таким логином уже существует.");
+            if (string.IsNullOrWhiteSpace(username)) return (false, "Введите логин.");
+            if (password.Length < 6)                 return (false, "Пароль минимум 6 символов.");
+            if (string.IsNullOrWhiteSpace(fullName)) return (false, "Введите ФИО.");
 
-            if (password.Length < 6)
-                return (false, "Пароль должен содержать минимум 6 символов.");
+            await using var conn = _db.GetConnection();
 
-            var newUser = new UserModel
-            {
-                Username = username,
-                PasswordHash = DataService.HashPassword(password),
-                FullName = fullName,
-                Email = email,
-                Phone = phone,
-                Role = "Manager"
-            };
-            _users.Add(newUser);
-            await _dataService.SaveUsersAsync(_users);
+            await using var check = new SqliteCommand(
+                "SELECT COUNT(*) FROM Users WHERE Username=@u", conn);
+            check.Parameters.AddWithValue("@u", username);
+            var count = (long)(await check.ExecuteScalarAsync() ?? 0L);
+            if (count > 0) return (false, "Такой логин уже занят.");
+
+            await using var cmd = new SqliteCommand("""
+                INSERT INTO Users (Id, Username, PasswordHash, FullName, Role, Email, Phone)
+                VALUES (@id, @u, @h, @fn, 'Manager', @em, @ph)
+                """, conn);
+            cmd.Parameters.AddWithValue("@id", Guid.NewGuid().ToString());
+            cmd.Parameters.AddWithValue("@u",  username);
+            cmd.Parameters.AddWithValue("@h",  AuthHelper.HashPassword(password));
+            cmd.Parameters.AddWithValue("@fn", fullName);
+            cmd.Parameters.AddWithValue("@em", email);
+            cmd.Parameters.AddWithValue("@ph", phone);
+            await cmd.ExecuteNonQueryAsync();
+
             return (true, "Менеджер успешно зарегистрирован.");
         }
 
-        public async Task<UserModel> RegisterGuestAsync(HotelData hotelData, string fullName, string phone, string email)
+        public async Task RegisterGuestAsync(string fullName, string phone, string email)
         {
-            var existing = hotelData.Guests.FirstOrDefault(g =>
-                g.FullName.Equals(fullName, StringComparison.OrdinalIgnoreCase) && g.Phone == phone);
+            await using var conn = _db.GetConnection();
 
-            if (existing != null) return existing;
+            await using var find = new SqliteCommand(
+                "SELECT COUNT(*) FROM Guests WHERE FullName=@fn AND Phone=@ph", conn);
+            find.Parameters.AddWithValue("@fn", fullName);
+            find.Parameters.AddWithValue("@ph", phone);
+            var exists = (long)(await find.ExecuteScalarAsync() ?? 0L);
+            if (exists > 0) return;
 
-            var guest = new UserModel
-            {
-                FullName = fullName,
-                Phone = phone,
-                Email = email,
-                Role = "Guest",
-                Username = phone
-            };
-            hotelData.Guests.Add(guest);
-            await _dataService.SaveHotelDataAsync(hotelData);
-            return guest;
+            await using var ins = new SqliteCommand(
+                "INSERT INTO Guests (Id, FullName, Phone, Email) VALUES (@id, @fn, @ph, @em)", conn);
+            ins.Parameters.AddWithValue("@id", Guid.NewGuid().ToString());
+            ins.Parameters.AddWithValue("@fn", fullName);
+            ins.Parameters.AddWithValue("@ph", phone);
+            ins.Parameters.AddWithValue("@em", email);
+            await ins.ExecuteNonQueryAsync();
         }
 
         public void Logout() => CurrentUser = null;
